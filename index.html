@@ -10,6 +10,8 @@
 		<p id="msg">msg : </p>
 		<script>
 			var recognition = new webkitSpeechRecognition();
+			var socket = new WebSocket('ws://127.0.0.1:8765');
+			
 			recognition.continuous = true;
 			recognition.interimResults = true;
 			recognition.lang = "th-TH";
@@ -17,18 +19,23 @@
 			//var final_transcript = "";
 			var interim_transcript = "";
 			
+			socket.addEventListener('error', function (event) {
+				recognition.stop();
+				document.getElementById("status").innerHTML = "status : error";
+			});
+			
 			recognition.onstart = function() {
-				console.log("start")
-				document.getElementById("status").innerHTML = "status : started" 
+				console.log("start");
+				document.getElementById("status").innerHTML = "status : started";
 			};
 
 			recognition.onerror = function(event) {
-				console.log("err")
+				console.log("err");
 			};
 
 			recognition.onend = function() {
-				console.log("end")
-				document.getElementById("status").innerHTML = "status : stoped" 
+				console.log("end");
+				document.getElementById("status").innerHTML = "status : stoped" ;
 			};
 
 			recognition.onresult = function(event) {
@@ -41,7 +48,8 @@
 				console.log("msg : " + interim_transcript);
 				if (interim_transcript == "" || interim_transcript == null) return;
 				document.getElementById("msg").innerHTML = "msg : " + interim_transcript;
-				fetch("/",{method:"POST",body:JSON.stringify({msg:interim_transcript})});
+				socket.send(interim_transcript)
+				//fetch("/",{method:"POST",body:JSON.stringify({msg:interim_transcript})});
 			}
 		</script>
 	</body>
